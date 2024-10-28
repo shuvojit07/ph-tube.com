@@ -14,13 +14,22 @@ const displayCategories = (categories) => {
 
     // creat  a button
 
-    const button = document.createElement("button");
-    button.classList = "btn";
-    button.innerText = item.category;
+    const buttonContainer = document.createElement("div");
+    // button.classList = "btn";
+    // button.innerText = item.category;
+    // // button.onclick = () => {
+    //      alert("hello")
+    //     };
+// innet html div att for button
+    buttonContainer.innerHTML = `
+        <button onclick="loadCategorieyVideos(${item.category_id})" class="btn">
+        ${item.category}
+        </button>
+    `;
 
     // add button
 
-    categoryContainer.append(button);
+    categoryContainer.append(buttonContainer);
 });
 
 };
@@ -33,6 +42,22 @@ const loadvideos = () =>{
     .then((data) => displayVideos(data.videos))
     .catch((error) => console.log(error));   
 };
+const loadCategorieyVideos = (id) => {
+alert(id);
+fetch(`https://openapi.programming-hero.com/api/phero-tube/category/${id}`)
+.then((res)=> res.json())
+.then((data) => displayVideos(data.category))
+.catch((error) => console.log(error));  
+};
+
+// time
+function getTimeString(time){
+    const hour = parseInt(time / 3600);
+    let remainingSecond = time % 3600 ;
+    const minute = parseInt( remainingSecond / 60 );
+    remainingSecond = parseInt(remainingSecond / 60 );
+    return `${hour} hour ${minute} minute ${remainingSecond} second ago `
+}
 // card demo 
 // const cardDemo = {
 //     "category_id": "1001",
@@ -55,6 +80,25 @@ const loadvideos = () =>{
 // display videos
 const displayVideos = (videos) => {
     const videoContainer = document.getElementById('videos');
+    videoContainer.innerHTML="";
+if(videos.length ==0){
+    videoContainer.classList.remove("grid");
+    videoContainer.innerHTML=`
+    <div class="min-h-[300px] w-full flex flex-col gao-5 justify-center items-center">
+   <img src="./assets/Icon.png" alt="">
+   <h2 class="text-black font-bold text-xl p-3">Oops!! Sorry, There is no content here
+   </h2>
+
+    </div>
+    `;
+    return;
+
+}
+else{
+    videoContainer
+    .classList.add("grid")
+}
+
     videos.forEach((videos) => {
         const card =document.createElement('div');
         card.classList = " card card-compact";
@@ -63,8 +107,8 @@ const displayVideos = (videos) => {
     <img
       src=${videos.thumbnail} class="h-full w-full object-cover"
       alt="videos" />
-      ${videos.others.posted_date?.length == 0 ? "" : `<span class="absolute right-2 bottom-2 bg-black text-white rounded p-1">
-      ${videos.others.posted_date}
+      ${videos.others.posted_date?.length == 0 ? "" : `<span class="absolute text-xs right-2 bottom-2 bg-slate-800  text-white rounded p-1">
+      ${getTimeString(videos.others.posted_date)}
       </span>`}
       
   </figure>
