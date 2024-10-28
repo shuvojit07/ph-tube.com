@@ -22,7 +22,7 @@ const displayCategories = (categories) => {
     //     };
 // innet html div att for button
     buttonContainer.innerHTML = `
-        <button onclick="loadCategorieyVideos(${item.category_id})" class="btn">
+        <button id="btn-${item.category_id}" onclick="loadCategorieyVideos(${item.category_id})" class="btn category-btn">
         ${item.category}
         </button>
     `;
@@ -36,17 +36,31 @@ const displayCategories = (categories) => {
 
 // 
 // videos load
-const loadvideos = () =>{
-    fetch('https://openapi.programming-hero.com/api/phero-tube/videos')
+const loadvideos = (searchText = "") =>{
+    fetch(`https://openapi.programming-hero.com/api/phero-tube/videos?title=${searchText}`)
     .then((res)=> res.json())
     .then((data) => displayVideos(data.videos))
     .catch((error) => console.log(error));   
 };
+const removeActiveClass = () => {
+const button = document.getElementsByClassName("category-btn");
+ for(let btn of button){
+    btn.classList.remove('active');
+ }
+}
+// 
 const loadCategorieyVideos = (id) => {
 
 fetch(`https://openapi.programming-hero.com/api/phero-tube/category/${id}`)
 .then((res)=> res.json())
-.then((data) => displayVideos(data.category))
+.then((data) => {
+    // remove active class
+    removeActiveClass();
+
+    // active class activeted
+    const activeBtn = document.getElementById(`btn-${id}`)
+    activeBtn.classList.add("active")
+    displayVideos(data.category)})
 .catch((error) => console.log(error));  
 };
 
@@ -57,7 +71,23 @@ function getTimeString(time){
     const minute = parseInt( remainingSecond / 60 );
     remainingSecond = parseInt(remainingSecond / 60 );
     return `${hour} hour ${minute} minute ${remainingSecond} second ago `
-}
+};
+const loadDetails=async (videoId) =>{
+    const uri=`https://openapi.programming-hero.com/api/phero-tube/video/${videoId}`;
+    const res = await fetch(uri);
+    const data = await res.json();
+    displayDetails(data.video)
+};
+const displayDetails = (video) =>{
+ const detailContainer = document.getElementById('modal-content');
+//  detail add
+detailContainer.innerHTML=`
+<img class="" src=${video.thumbnail}/>
+<p> ${video.description}</p>
+`;
+
+ document.getElementById('showModalData').click();
+};
 // card demo 
 // const cardDemo = {
 //     "category_id": "1001",
@@ -127,6 +157,10 @@ else{
             ${videos.authors[0].verified == true ? ` <img class="w-6 " src="https://img.icons8.com/?size=48&id=D9RtvkuOe31p&format=png"/>` : ""}
             </div>
          </div>
+         <p> 
+         <button onclick="loadDetails('${videos.video_id}')" class="btn btn-sm btn-error">details </button>
+          
+         </p>
       </div>
         
    
@@ -134,8 +168,11 @@ else{
         `;
         videoContainer.append(card);
     });
-}
+};
 
 
+document.getElementById('serch-input').addEventListener("keyup", (e) => {
+loadvideos(e.terget.value);
+})
 loadCategories();
 loadvideos();
